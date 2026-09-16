@@ -1,0 +1,21 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa
+id_ed25519
+
+# Dependencies / builds
+node_modules/
+dist/
+build/
+coverage/
+.next/
+
+# Local tooling
+.DS_Store
+.vscode/
+.idea/
+*.log
