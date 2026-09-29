@@ -14,64 +14,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify required protocol files
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Required files, tracked secret files, Markdown links, agent contracts,
+      # command/README parity, and profile structure. Run locally with the same command.
+      - name: Validate protocol structure and contracts
+        run: python3 scripts/validate.py
+
+  adoption-script:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shellcheck
+        run: shellcheck scripts/*.sh
+
+      - name: Smoke test adoption into an empty repository
         shell: bash
         run: |
           set -euo pipefail
-          required=(
-            "README.md"
-            "AGENTS.md"
-            "docs/PROTOCOL.md"
-            "docs/QUALITY.md"
-            "docs/DEFINITION_OF_DONE.md"
-            "docs/PRODUCT.md"
-            "docs/ARCHITECTURE.md"
-            "docs/DECISIONS.md"
-            ".github/PULL_REQUEST_TEMPLATE.md"
-          )
+          target="$(mktemp -d)"
 
-          for file in "${required[@]}"; do
-            if [[ ! -s "$file" ]]; then
-              echo "Missing or empty required file: $file"
-              exit 1
-            fi
-          done
+          # Dry run must not write anything.
+          scripts/adopt.sh --level 4 "$target"
+          test -z "$(find "$target" -type f)"
 
-      - name: Guard against common committed secret files
-        shell: bash
-        run: |
-          set -euo pipefail
-          tracked="$(git ls-files)"
+          scripts/adopt.sh --level 4 --adapters --profile typescript-supabase-vercel --apply "$target"
+          test -f "$target/AGENTS.md"
+          test -f "$target/agents/orchestrator.md"
+          test -f "$target/.claude/commands/ads-feature.md"
+          test -f "$target/.cursor/rules/ai-development-system.mdc"
 
-          if echo "$tracked" | grep -E '(^|/)(\.env|\.env\.(local|production|development)|id_rsa|id_ed25519)$' >/dev/null; then
-            echo "Potential secret-bearing file is tracked. Remove it before merging."
-            echo "$tracked" | grep -E '(^|/)(\.env|\.env\.(local|production|development)|id_rsa|id_ed25519)$' || true
-            exit 1
-          fi
-
-      - name: Validate internal Markdown references
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          missing = []
-          for md in Path('.').rglob('*.md'):
-              text = md.read_text(encoding='utf-8')
-              for target in re.findall(r'\[[^\]]+\]\(([^)]+)\)', text):
-                  if target.startswith(('http://', 'https://', '#', 'mailto:')):
-                      continue
-                  clean = target.split('#', 1)[0]
-                  if not clean:
-                      continue
-                  resolved = (md.parent / clean).resolve()
-                  if not resolved.exists():
-                      missing.append((str(md), target))
-          if missing:
-              for source, target in missing:
-                  print(f'Broken local link: {source} -> {target}')
-              raise SystemExit(1)
-          print('Internal Markdown references OK')
-          PY
+          # Existing files must never be overwritten.
+          echo "project-specific rules" > "$target/AGENTS.md"
+          scripts/adopt.sh --level 4 --apply "$target"
+          grep -qx "project-specific rules" "$target/AGENTS.md"

@@ -22,43 +22,66 @@ The system is deliberately **risk-based**: a typo does not receive the same cere
 2. Read `docs/V2.md` for orchestration, risk profiles, and evidence contracts.
 3. Read `docs/PROTOCOL.md` for the lifecycle.
 4. Read `docs/QUALITY.md` for the 10 quality gates and P0–P3 findings.
-5. Use `docs/ADOPTION.md` to bring the system into an existing repository.
-6. Use `commands/README.md` as the reusable command interface.
+5. Use `docs/ADOPTION.md` and `scripts/adopt.sh` to bring the system into an existing repository.
+6. Use `commands/README.md` as the reusable command interface; Claude Code users get them as `/ads-*` slash commands.
+7. See `examples/` for a full R3 walkthrough and a minimal R0 change.
+
+## Using it with your AI client
+
+| Client | Entry point |
+|---|---|
+| Claude Code | `CLAUDE.md` (imports `AGENTS.md`) and `/ads-discover`, `/ads-plan`, `/ads-feature`, … from `.claude/commands/` |
+| Codex and other `AGENTS.md`-aware clients | `AGENTS.md` |
+| Cursor | `adapters/cursor/` |
+| GitHub Copilot | `adapters/copilot/` |
+
+See `adapters/README.md`.
+
+## Adopting in another repository
+
+```bash
+# Preview what level 1 (guardrails) would add — writes nothing
+scripts/adopt.sh ../my-app
+
+# Apply level 3 with a stack profile and client adapters
+scripts/adopt.sh --level 3 --profile nextjs-prisma-postgres --adapters --apply ../my-app
+```
+
+The script never overwrites existing files and does not copy CI workflows; wire your repository's real checks yourself (`docs/ADOPTION.md`).
+
+## Validating this repository
+
+```bash
+python3 scripts/validate.py
+```
+
+CI runs the same validator, plus shellcheck and an adoption smoke test.
 
 ## Repository structure
 
 ```text
-AGENTS.md
-agents/
-  orchestrator.md
-  discovery.md
-  architecture.md
-  implementation.md
-  ux-audit.md
-  security-audit.md
-  database-audit.md
-  performance-audit.md
-  reliability-audit.md
-  regression-audit.md
-  quality-gate.md
-  ship.md
-commands/
-  README.md
-docs/
-  V2.md
-  PROTOCOL.md
-  QUALITY.md
-  DEFINITION_OF_DONE.md
-  ADOPTION.md
-  PRODUCT.md
-  ARCHITECTURE.md
-  DECISIONS.md
-profiles/
-  typescript-supabase-vercel.md
+AGENTS.md                 non-negotiable agent rules (single source of truth)
+CLAUDE.md                 Claude Code entry point (imports AGENTS.md)
+.claude/commands/         /ads-* slash commands for Claude Code
+agents/                   orchestrator and specialist contracts
+  orchestrator.md  discovery.md  architecture.md  implementation.md
+  ux-audit.md  security-audit.md  database-audit.md  performance-audit.md
+  reliability-audit.md  regression-audit.md  quality-gate.md  ship.md
+commands/README.md        conceptual lifecycle commands
+docs/                     V2, protocol, quality gates, DoD, adoption, context templates
+templates/                evidence report, migration runbook, post-deploy report
+examples/                 worked R0 and R3 walkthroughs
+profiles/                 optional stack profiles
+  typescript-supabase-vercel.md  nextjs-prisma-postgres.md
+  python-fastapi-postgres.md     react-native-expo.md
+adapters/                 Cursor and Copilot adapters
+scripts/
+  adopt.sh                incremental, non-destructive adoption
+  validate.py             structure and contract validation (used by CI)
 .github/
-  ISSUE_TEMPLATE/
+  ISSUE_TEMPLATE/         feature, bug
   PULL_REQUEST_TEMPLATE.md
-  workflows/
+  workflows/quality.yml
 ```
 
 ## Design goals

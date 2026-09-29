@@ -30,6 +30,17 @@ Find measurable performance/data-access problems in the changed or critical path
 - long external API chains;
 - operations better suited to background jobs.
 
+## Output
+
+```text
+Status:
+Paths reviewed:
+Measurements (before/after when practical):
+Findings (P0–P3, docs/QUALITY.md format):
+Recommended actions with scale/reliability reason:
+Unverified items:
+```
+
 ## Evidence
 
 For performance fixes, capture useful before/after evidence when practical: query/request count, timing, payload size, render count, bundle impact, or reproducible trace.

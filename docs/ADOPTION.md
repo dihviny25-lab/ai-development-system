@@ -51,6 +51,24 @@ Connect:
 
 Goal: evidence continues beyond merge.
 
+## Adoption script
+
+`scripts/adopt.sh` copies the files for a level into a target repository:
+
+```bash
+scripts/adopt.sh --level 2 ../my-app            # dry run: prints the plan
+scripts/adopt.sh --level 2 --apply ../my-app    # writes missing files
+```
+
+Options: `--profile NAME` (repeatable) adds a stack profile from `profiles/`; `--adapters` adds `CLAUDE.md` and the Cursor/Copilot adapters. Levels 4–5 also add the `agents/` contracts and the `/ads-*` Claude Code commands.
+
+The script is deliberately conservative:
+- dry run unless `--apply` is given;
+- never overwrites: differing files are reported as `CONFLICT` for manual merge;
+- never copies CI workflows, because CI must call the repository's real scripts.
+
+Copying files is only the mechanical part. The checklist below is the actual adoption.
+
 ## Existing repository adoption checklist
 
 1. Inventory the current stack, scripts, CI, deployment, auth, data layer, and tests.
