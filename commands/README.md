@@ -13,6 +13,8 @@ They intentionally reuse common engineering meanings rather than bind the protoc
 
 The `ads-` prefix avoids collisions with client built-ins such as `/plan` and `/review`. `scripts/validate.py` fails CI if a command documented below has no Claude Code implementation, or vice versa.
 
+Structure is checked by `scripts/validate.py`; behavior is spot-checked by `scripts/eval-commands.sh`, which currently covers `/ads-discover` (read-only) and `/ads-plan` (R3 stops for approval). Other commands are not behaviorally tested.
+
 ## `/discover`
 
 Inspect the product/repository/change request without editing. Produce current behavior, relevant files, risks, unknowns, and proposed acceptance criteria.

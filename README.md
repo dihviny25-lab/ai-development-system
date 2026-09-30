@@ -57,6 +57,14 @@ python3 scripts/validate.py
 
 CI runs the same validator, plus shellcheck and an adoption smoke test.
 
+`validate.py` proves the files are well formed, not that an agent obeys them. To check behavior with a real model (costs API usage, non-deterministic):
+
+```bash
+scripts/eval-commands.sh          # needs the `claude` CLI and credentials
+```
+
+It runs `/ads-discover` and `/ads-plan` in throwaway repositories and asserts objective facts: discovery changes no files, and a destructive authorization + migration change is classified R3 with an approval requirement. It is opt-in (the manual "Command Evals" workflow) and never gates pull requests. Exit code 77 means skipped or inconclusive, which verifies nothing.
+
 ## Repository structure
 
 ```text
