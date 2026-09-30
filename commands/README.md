@@ -8,12 +8,10 @@ They intentionally reuse common engineering meanings rather than bind the protoc
 
 | Client | Location | Invocation |
 |---|---|---|
-| Claude Code | `.claude/commands/ads-*.md` | `/ads-discover`, `/ads-plan`, … `/ads-feature` |
-| Other clients | — | Plain language naming the phase and contract (see `adapters/README.md`) |
+| Claude Code | `.claude/commands/ads-*.md` (adoption level 4+) | `/ads-discover`, `/ads-plan`, … `/ads-feature` |
+| Other clients | — | Plain language naming the phase and the contract in `agents/` |
 
-The `ads-` prefix avoids collisions with client built-ins such as `/plan` and `/review`. `scripts/validate.py` fails CI if a command documented below has no Claude Code implementation, or vice versa.
-
-Structure is checked by `scripts/validate.py`; behavior is spot-checked by `scripts/eval-commands.sh`, which currently covers `/ads-discover` (read-only) and `/ads-plan` (R3 stops for approval). Other commands are not behaviorally tested.
+The `ads-` prefix avoids collisions with client built-ins such as `/plan` and `/review`.
 
 ## `/discover`
 

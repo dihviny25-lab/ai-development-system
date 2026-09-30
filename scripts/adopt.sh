@@ -24,6 +24,8 @@ Options:
                                       project-specific; see docs/ADOPTION.md)
   --profile NAME    Also copy profiles/NAME.md (repeatable)
   --adapters        Also copy client adapters (CLAUDE.md, Cursor, Copilot)
+                    Profiles/adapters need the files they reference; the script
+                    refuses a --level that would leave references dangling.
   --apply           Write files. Without it, only prints the plan.
   -h, --help        Show this help
 USAGE
@@ -61,6 +63,7 @@ target="$(cd "$target" && pwd)"
 [[ "$target" != "$SOURCE" ]] || { echo "error: target is the system repository itself" >&2; exit 2; }
 
 # Each entry is "source-path:destination-path", relative to SOURCE and target.
+extras=()   # profile/adapter entries, checked for dangling references below
 files=(
   "AGENTS.md:AGENTS.md"
   "docs/DEFINITION_OF_DONE.md:docs/DEFINITION_OF_DONE.md"
@@ -100,14 +103,48 @@ for name in ${profiles[@]+"${profiles[@]}"}; do
     exit 2
   fi
   files+=("profiles/$name.md:profiles/$name.md")
+  extras+=("profiles/$name.md:profiles/$name.md")
 done
 if $adapters; then
-  files+=(
+  adapter_files=(
     "CLAUDE.md:CLAUDE.md"
     "adapters/cursor/ai-development-system.mdc:.cursor/rules/ai-development-system.mdc"
     "adapters/copilot/copilot-instructions.md:.github/copilot-instructions.md"
   )
+  files+=("${adapter_files[@]}")
+  extras+=("${adapter_files[@]}")
 fi
+
+# Profiles and adapters point at other files (templates, agents, docs). Refuse
+# combinations that would leave those references dangling in the target.
+check_dependencies() {
+  local entry src ref planned dest_rel found
+  local missing=()
+  for entry in "$@"; do
+    src="$SOURCE/${entry%%:*}"
+    # shellcheck disable=SC2016  # the backticks are literal Markdown code spans
+    while IFS= read -r ref; do
+      found=false
+      [[ -e "$target/$ref" ]] && found=true
+      if ! $found; then
+        for planned in "${files[@]}"; do
+          dest_rel="${planned#*:}"
+          if [[ "$dest_rel" == "$ref" || ( "$ref" == */ && "$dest_rel" == "$ref"* ) ]]; then
+            found=true; break
+          fi
+        done
+      fi
+      $found || missing+=("${entry#*:} -> $ref")
+    done < <(grep -oE '`(agents|docs|templates|commands|adapters|scripts|examples|profiles)/[A-Za-z0-9_./-]*`' "$src" | tr -d '`' | sort -u)
+  done
+  if (( ${#missing[@]} )); then
+    echo "error: these files reference files that would not be adopted:" >&2
+    printf '  %s\n' "${missing[@]}" >&2
+    echo "Use a higher --level (see --help) or adopt the referenced files first." >&2
+    exit 2
+  fi
+}
+(( ${#extras[@]} == 0 )) || check_dependencies "${extras[@]}"
 
 $apply && mode="APPLY" || mode="DRY RUN"
 echo "AI Development System adoption — level $level — $mode"

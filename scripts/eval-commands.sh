@@ -40,7 +40,7 @@ if ! command -v claude >/dev/null 2>&1; then
 fi
 
 workdirs=()
-# shellcheck disable=SC2329  # invoked via trap
+# shellcheck disable=SC2317,SC2329  # invoked via trap (code differs by shellcheck version)
 cleanup() { $keep || rm -rf ${workdirs[@]+"${workdirs[@]}"}; }
 trap cleanup EXIT
 

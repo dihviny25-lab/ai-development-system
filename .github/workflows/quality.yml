@@ -31,6 +31,10 @@ jobs:
       - name: Shellcheck
         run: shellcheck scripts/*.sh
 
+      # Adopting at any level (with adapters/profiles) must never leave a cited path missing.
+      - name: Check adoption leaves no dangling references
+        run: python3 scripts/check-adoption.py
+
       - name: Smoke test adoption into an empty repository
         shell: bash
         run: |

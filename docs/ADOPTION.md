@@ -60,7 +60,7 @@ scripts/adopt.sh --level 2 ../my-app            # dry run: prints the plan
 scripts/adopt.sh --level 2 --apply ../my-app    # writes missing files
 ```
 
-Options: `--profile NAME` (repeatable) adds a stack profile from `profiles/`; `--adapters` adds `CLAUDE.md` and the Cursor/Copilot adapters. Levels 4–5 also add the `agents/` contracts and the `/ads-*` Claude Code commands.
+Options: `--profile NAME` (repeatable) adds a stack profile from `profiles/`; `--adapters` adds `CLAUDE.md` and the Cursor/Copilot adapters. Profiles and adapters reference templates, docs, and agent contracts, so the script refuses a level that would leave those references dangling and tells you which files are missing (adapters need level 4; some profiles need level 3 or 4). Levels 4–5 also add the `agents/` contracts and the `/ads-*` Claude Code commands.
 
 The script is deliberately conservative:
 - dry run unless `--apply` is given;

@@ -55,7 +55,7 @@ The script never overwrites existing files and does not copy CI workflows; wire 
 python3 scripts/validate.py
 ```
 
-CI runs the same validator, plus shellcheck and an adoption smoke test.
+CI runs the same validator, plus shellcheck, an adoption smoke test, and `scripts/check-adoption.py` (adopting at any level must not leave dangling references).
 
 `validate.py` proves the files are well formed, not that an agent obeys them. To check behavior with a real model (costs API usage, non-deterministic):
 
