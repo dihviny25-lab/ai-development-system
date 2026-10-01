@@ -59,3 +59,47 @@ Ship state / next action:
 ```
 
 The orchestrator owns the meaning of “done”; specialists only own their bounded findings.
+
+## Adaptive Routing Contract
+
+Specialists are selected from evidence discovered in the task, not from the product's business category.
+
+Before delegation, produce a routing record:
+
+```text
+Observed product context:
+Change surfaces:
+Critical invariants:
+Failure modes:
+Risk profile + rationale:
+Selected specialists + reason:
+Skipped specialists + reason:
+Required evidence:
+```
+
+### Routing signals
+
+- Authentication, authorization, roles, permissions or tenancy → consider Security and Regression.
+- Schema, migrations, relationships, queries or persistence → consider Database and Regression.
+- Offline state, synchronization, retries, queues, concurrency or external failure → consider Reliability and Regression.
+- Interaction flows, loading/error/empty/success states or user feedback → consider UX.
+- Keyboard, semantics, focus, contrast or assistive technology → consider Accessibility.
+- Rendering cost, payload size, query volume or latency → consider Performance.
+- Cross-boundary, structural or ownership changes → consider Architecture.
+- Any user-visible or business behavior change → consider Regression.
+
+These are routing signals, not a mandatory checklist. Select a specialist only when its analysis can materially change implementation or verification.
+
+### Domain adaptation
+
+Domain knowledge must refine invariants and acceptance tests, not hard-code vertical-specific agents.
+
+For example, the same Reliability agent may investigate offline learning progress in an education app, payment retries in commerce, or job execution in a construction system. Its contract stays reusable while the discovered invariants change.
+
+### Skip discipline
+
+For every specialist not selected that would normally be suggested by the change surfaces, state why it is not applicable. R0/R1 work should remain lightweight unless evidence justifies escalation.
+
+### Uncertainty
+
+When repository context is insufficient to route safely, Discovery is mandatory. Do not infer critical domain rules from repository names alone.
