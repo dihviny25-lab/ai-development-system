@@ -115,3 +115,99 @@ The orchestrator is adaptive when it can explain:
 - what evidence is required before completion.
 
 A specialist is not selected merely because it exists.
+
+
+## Change-surface validation
+
+The router was then evaluated against three real changes rather than only three product descriptions.
+
+### Case 1 — Som da Crianca PR #21: prerequisite cycle validation
+
+Observed surface:
+- pure curriculum/domain integrity;
+- deterministic graph validation;
+- regression test added;
+- no authentication, persistence migration or user interaction change.
+
+Routing:
+- Risk: R1/R2 boundary; R2 is appropriate because invalid curriculum can affect learning progression.
+- Select: Regression; Implementation/domain logic review.
+- Consider: Architecture only if prerequisite representation itself changes.
+- Skip: Security, Database, Accessibility, UX, Reliability and Performance for this patch because they do not materially change the verification question.
+
+Required evidence:
+- acyclic curriculum remains valid;
+- direct and indirect cycles are rejected;
+- missing prerequisite behavior is preserved;
+- existing curriculum validation tests pass.
+
+### Case 2 — Gestao de Barbearia PR #30: protect auth.users via authorized RPC
+
+Observed surface:
+- authentication/authorization;
+- tenant isolation;
+- SECURITY DEFINER function;
+- grants/revokes and database migration;
+- frontend data-access path change.
+
+Routing:
+- Risk: R3.
+- Select: Security, Database, Regression.
+- Consider: Architecture because the authorization boundary moves from client filtering to database RPC.
+- Skip: Accessibility and Performance unless evidence reveals a related regression. UX is limited to failure-state behavior, not the primary gate.
+
+Required evidence:
+- unauthenticated caller denied;
+- non-admin roles denied;
+- admin restricted to own tenant;
+- cross-tenant access denied;
+- superadmin behavior matches intended policy;
+- direct view access denied;
+- migration/advisor state verified before production.
+
+### Case 3 — Seminario Huguenotes PR #95: ongoing-discipline filter
+
+Observed surface:
+- teacher dashboard domain logic;
+- additional scoped database reads;
+- substituted/assigned lesson semantics;
+- rendered grouping adjustment.
+
+Routing:
+- Risk: R2.
+- Select: Regression, Database.
+- Consider: Performance because extra queries were introduced; UX because rendering/grouping changed.
+- Skip: Security unless authorization scope changes; no evidence in this patch indicates such a change.
+
+Required evidence:
+- owned disciplines with substituted past lessons are classified correctly;
+- assigned lessons in third-party disciplines obey the same ongoing rule;
+- not-started and ended disciplines are excluded;
+- query expansion remains bounded to referenced discipline IDs;
+- automated tests and preview behavior agree.
+
+Observed repository evidence:
+- Som da Crianca PR #21 was mergeable and had a Ready preview; no GitHub Actions workflow run was returned for its head SHA.
+- Gestao de Barbearia PR #30 was mergeable and had a Ready preview; no GitHub Actions workflow run was returned for its head SHA.
+- Seminario Huguenotes commit d44ea12 had a completed successful CI run.
+
+## Routing verdict
+
+**PASS**
+
+The router produced materially different specialist sets for three different change surfaces:
+
+```text
+Curriculum graph integrity
+  → Regression / domain logic
+
+Authorization + tenancy + DDL
+  → Security + Database + Regression (+ Architecture)
+
+Dashboard filtering + scoped query expansion
+  → Regression + Database (+ Performance / UX)
+```
+
+This demonstrates the intended property: specialist routing follows impact and failure modes rather than business vertical.
+
+Remaining limitation: the routing contract is still a protocol interpreted by the orchestrating agent, not executable policy code. A future version may add machine-readable routing metadata, but v2 should not require that to remain useful across stacks.
