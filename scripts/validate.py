@@ -109,11 +109,13 @@ def check_agents() -> None:
         text = path.read_text(encoding="utf-8")
         if not text.startswith("# "):
             error("agents", f"{rel(path)} must start with a '# ' title")
-        if not re.search(r"^## Mission\s*$", text, re.MULTILINE):
-            error("agents", f"{rel(path)} is missing section '## Mission'")
-        # The orchestrator names its output contract "Completion report".
-        if not re.search(r"^## (Output|Completion report)\s*$", text, re.MULTILINE):
-            error("agents", f"{rel(path)} is missing an '## Output' contract section")
+        # Some contracts name these sections differently: the shared execution
+        # contract uses "Purpose" / "Return schema", the orchestrator
+        # "Completion report". A purpose and an output contract are still required.
+        if not re.search(r"^## (Mission|Purpose)\s*$", text, re.MULTILINE):
+            error("agents", f"{rel(path)} is missing a '## Mission' (or '## Purpose') section")
+        if not re.search(r"^## (Output|Completion report|Return schema)\s*$", text, re.MULTILINE):
+            error("agents", f"{rel(path)} is missing an '## Output' (or '## Return schema') contract section")
     check_repo_path_references(agents)
 
 
