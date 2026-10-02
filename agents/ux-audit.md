@@ -18,6 +18,17 @@ Audit user-facing changes for clarity, state communication, responsive behavior,
 - dialogs, menus, sticky/fixed UI;
 - slow-network/API-failure behavior for critical flows.
 
+## Output
+
+```text
+Status:
+Flows/screens reviewed:
+Viewports/devices/assistive tech used:
+Findings (P0–P3, docs/QUALITY.md format):
+Reproduction steps per finding:
+Unverified items:
+```
+
 ## Evidence
 
 Prefer reproducible interaction steps, viewport/context, accessibility semantics, screenshots when available, and observed behavior.

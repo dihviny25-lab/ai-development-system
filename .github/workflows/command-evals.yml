@@ -1,0 +1,36 @@
+name: Command Evals
+
+# Opt-in only. Runs the /ads-* commands against a real model, which costs API
+# usage and is non-deterministic, so it must never gate pull requests.
+# Trigger it manually from the Actions tab. Requires the ANTHROPIC_API_KEY
+# repository secret; without it the job reports the evals as NOT RUN.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run command evals
+        shell: bash
+        run: |
+          if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
+            echo "::error::ANTHROPIC_API_KEY secret is not set. Evals NOT RUN; nothing was verified."
+            exit 1
+          fi
+          scripts/eval-commands.sh

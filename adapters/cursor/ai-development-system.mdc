@@ -1,0 +1,14 @@
+---
+description: AI Development System — evidence-driven development rules
+alwaysApply: true
+---
+
+Follow the operating rules in `AGENTS.md` at the repository root for every task. They override default behavior.
+
+Key points (the full rules are in `AGENTS.md`):
+
+- Code written is not work completed. Completion requires evidence mapped to acceptance criteria.
+- Assign a risk profile (R0–R3, `docs/V2.md`) and scale verification to it.
+- Use the phase contracts in `agents/` (discovery, architecture, implementation, quality-gate, ship, and the audit agents).
+- Stop for explicit human approval before destructive or production-affecting actions.
+- Never weaken authentication, authorization, validation, or data isolation to make a check pass.

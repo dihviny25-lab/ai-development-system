@@ -4,6 +4,15 @@ These commands are conceptual interfaces. An AI client may implement them as sla
 
 They intentionally reuse common engineering meanings rather than bind the protocol to one tool.
 
+## Implementations
+
+| Client | Location | Invocation |
+|---|---|---|
+| Claude Code | `.claude/commands/ads-*.md` (adoption level 4+) | `/ads-discover`, `/ads-plan`, … `/ads-feature` |
+| Other clients | — | Plain language naming the phase and the contract in `agents/` |
+
+The `ads-` prefix avoids collisions with client built-ins such as `/plan` and `/review`.
+
 ## `/discover`
 
 Inspect the product/repository/change request without editing. Produce current behavior, relevant files, risks, unknowns, and proposed acceptance criteria.
