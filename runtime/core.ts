@@ -163,7 +163,17 @@ export function reconcile(
   if (findings.some((f) => f.severity === "P0" || f.severity === "P1")) {
     return { status: "FAIL", summary: "Blocking P0/P1 finding exists", evidence, findings, assumptions: [], changesMade: [], unverified };
   }
-  const hasFindings = findings.length > 0 || unverified.length > 0 || all.some((r) => r.status === "PASS_WITH_FINDINGS");
+  const requiredEvidence = [
+    ...manifest.evidenceRequired,
+    ...manifest.workUnits.flatMap((unit) => unit.evidenceRequired),
+  ];
+  const missingEvidence = [...new Set(requiredEvidence.filter((required) => !evidence.includes(required)))];
+  const reconciledUnverified = [...new Set([...unverified, ...missingEvidence.map((item) => `Missing required evidence: ${item}`)])];
+
+  const hasFindings =
+    findings.length > 0 ||
+    reconciledUnverified.length > 0 ||
+    all.some((r) => r.status === "PASS_WITH_FINDINGS");
   return {
     status: hasFindings ? "PASS_WITH_FINDINGS" : "PASS",
     summary: hasFindings ? "Execution completed with findings" : "Execution completed",
@@ -171,7 +181,7 @@ export function reconcile(
     findings,
     assumptions: [...new Set(all.flatMap((r) => r.assumptions))],
     changesMade: [...new Set(all.flatMap((r) => r.changesMade))],
-    unverified,
+    unverified: reconciledUnverified,
   };
 }
 
@@ -233,7 +243,8 @@ export async function executeManifest(
   // Findings and unverified items require an explicit disposition before shipping.
   // The reference runtime cannot invent that decision, so it stops at the gate.
   if (reconciliation.status === "PASS_WITH_FINDINGS") {
-    return { state: "BLOCKED", results, reconciliation };
+    state = transition(state, "BLOCKED");
+    return { state, results, reconciliation };
   }
 
   state = transition(state, "READY_TO_SHIP");
