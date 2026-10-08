@@ -55,3 +55,19 @@ jobs:
           echo "project-specific rules" > "$target/AGENTS.md"
           scripts/adopt.sh --level 4 --apply "$target"
           grep -qx "project-specific rules" "$target/AGENTS.md"
+
+
+  runtime-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Typecheck runtime
+        run: npx --yes -p typescript tsc --noEmit --strict --target ES2022 --module nodenext --moduleResolution nodenext runtime/core.ts runtime/core.test.ts
+
+      - name: Execute runtime tests
+        run: npx --yes tsx runtime/core.test.ts
