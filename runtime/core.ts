@@ -211,7 +211,8 @@ export async function executeManifest(
         changesMade: [],
         unverified: manifest.workUnits.filter((u) => !results[u.id]).map((u) => u.id),
       };
-      return { state: "BLOCKED", results, reconciliation };
+      state = transition(state, "BLOCKED");
+      return { state, results, reconciliation };
     }
 
     const conflicts = conflictingMutations(runnable);
@@ -225,17 +226,25 @@ export async function executeManifest(
     for (const [id, result] of completed) results[id] = result;
 
     if (completed.some(([, result]) => result.status === "FAIL")) {
-      return { state: "FAILED", results, reconciliation: reconcile(manifest, results) };
+      state = transition(state, "FAILED");
+      return { state, results, reconciliation: reconcile(manifest, results) };
     }
     if (completed.some(([, result]) => result.status === "BLOCKED")) {
-      return { state: "BLOCKED", results, reconciliation: reconcile(manifest, results) };
+      state = transition(state, "BLOCKED");
+      return { state, results, reconciliation: reconcile(manifest, results) };
     }
   }
 
   state = transition(state, "RECONCILING");
   const reconciliation = reconcile(manifest, results);
-  if (reconciliation.status === "FAIL") return { state: "FAILED", results, reconciliation };
-  if (reconciliation.status === "BLOCKED") return { state: "BLOCKED", results, reconciliation };
+  if (reconciliation.status === "FAIL") {
+    state = transition(state, "FAILED");
+    return { state, results, reconciliation };
+  }
+  if (reconciliation.status === "BLOCKED") {
+    state = transition(state, "BLOCKED");
+    return { state, results, reconciliation };
+  }
 
   state = transition(state, "VERIFYING");
   state = transition(state, "GATING");
